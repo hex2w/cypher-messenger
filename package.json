@@ -2,13 +2,22 @@
   "name": "cypher-messenger",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "app.js",
+  "type": "module",
   "scripts": {
+    "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "koa": "^2.13.4"
+    "@koa/cors": "^3.3.0",
+    "@koa/router": "^10.1.1",
+    "chart": "^0.1.2",
+    "koa": "^2.13.4",
+    "socket.io": "^4.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
   }
 }
