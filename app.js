@@ -1,13 +1,15 @@
 import Koa from "koa"
+import Router from "@koa/router"
+import Cors from "@koa/cors"
+import compose from "koa-compose"
 import { Server } from "socket.io"
-import { logger } from "./middleware"
+import middleware from "./middleware"
 
 
 const server = new Koa()
 const io = new Server(server)
+const router = new Router()
 
-
-server.use(logger)
 
 io.on("connection", socket => {
     socket.emit("hello", "hello world")
@@ -19,4 +21,7 @@ io.on("connection", socket => {
     socket.on("disconnect", _ => console.log("user disconnected") )
 })
 
-server.listen(3000)
+
+server.use(router.routes())
+      .use(router.allowedMethods())
+      .listen(3000)

@@ -1,5 +1,5 @@
 import logger from "./logger.js"
 
-export {
+export default [
     logger
-}
+]
