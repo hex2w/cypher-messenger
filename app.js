@@ -1,10 +1,13 @@
 import Koa from "koa"
 import { Server } from "socket.io"
-import { logger } from "middleware"
+import { logger } from "./middleware"
 
 
 const server = new Koa()
 const io = new Server(server)
+
+
+server.use(logger)
 
 io.on("connection", socket => {
     socket.emit("hello", "hello world")
