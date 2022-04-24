@@ -1,38 +1,85 @@
+import http from "http"
+import https from "https"
+import { readFileSync } from "fs"
 import Koa from "koa"
 import Router from "@koa/router"
-import Cors from "@koa/cors"
-import compose from "koa-compose"
+import cors from "@koa/cors"
+import session from "koa-session"
 import { Server } from "socket.io"
-import middleware from "./middleware"
+
+import config from "./config.js"
+import middleware from "./middleware/"
+import socketMiddleware from "./controllers/io"
+import httpMiddleware from "./middleware/http"
 
 
-const server = new Koa()
-const io = new Server(server)
+const app = new Koa()
+
+// setup sessions for REST services
+app.keys = [ config.secret ]
+app.use(session({}, app))
+
+
+// manually create the http server
+if (config.protocol === "https" && config.key && config.cert) {
+    try {
+        app.server = https.createServer({
+            key: readFileSync(config.key),
+            cert: readFileSync(config.cert),
+        }, app.callback())
+    } catch (err) {
+        console.log("Unable to create the server with provided key and certificate!", err)
+    }
+} else {
+    app.server = http.createServer( app.callback() )
+}
+
+// override app.listen
+app.listen = (...args) => {
+    app.server.listen.call(app.server, ...args)
+    return app.server
+}
+
+// create a socket.io instance
+app.io = new Server(app.server)
+
+
+
+/***
+ * MIDDLEWARE
+ **/
+
+// setup REST routing
 const router = new Router()
+app.use( router.routes() )
+    .use( router.allowedMethods() )
 
+// setup CORS
+app.use( cors({ origin: "*" }) )
 
-io.on("connection", socket => {
-    socket.emit("hello", "hello world")
+app.use( middleware )
+//    .use( httpMiddleware )
+app.io.use( socketMiddleware )
 
-    socket.on("hi", arg => {
-        console.log(arg)
-    })
+// setup sessions for WebSocket services
+app.io.use((socket, next) => {
+    try {
+        // create new Koa context from the socket's request so we can decrypt the session cookie
+        const ctx = app.createContext( socket.request, new http.OutgoingMessage() )
+        socket.session = ctx.session
 
-    socket.on("disconnect", _ => console.log("user disconnected") )
+        return next()
+    } catch (err) { return next(err) }
 })
 
-io.on("connection", (socket) => {
-    console.log(`user ${socket.id} connected`)
-    socket.on("message", (message) => {
-      console.log(message)
-      io.emit("message", `${socket.id.substring(0, 1)}: ${message}`)
-    })
-  
-    socket.on("disconnect", (_) => console.log(`user ${socket.id} disconnected`))
+
+
+app.io.on("connection", socket => {
+    // run all middleware functions with socket and io as args
+    console.log("client connected")
+    socket.on("message", msg => console.log(msg))
 })
 
-server
-      .use(compose(middleware))
-      .use(router.routes())
-      .use(router.allowedMethods())
-      .listen(3000)
+app.listen(config.port, _ => {
+    console.log(`listening on *:${config.port}`)
+})

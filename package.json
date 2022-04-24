@@ -12,13 +12,17 @@
   "license": "ISC",
   "dependencies": {
     "@koa/cors": "^3.3.0",
+    "@koa/multer": "^3.0.0",
     "@koa/router": "^10.1.1",
     "chart": "^0.1.2",
     "koa": "^2.13.4",
     "koa-compose": "^4.1.0",
+    "koa-session": "^6.2.0",
+    "multer": "^1.4.4",
     "socket.io": "^4.4.1"
   },
   "devDependencies": {
+    "@types/node": "^17.0.25",
     "nodemon": "^2.0.15"
   }
 }

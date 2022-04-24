@@ -2,16 +2,16 @@ import chalk from "chalk"
 
 
 export default async function (ctx, next) {
-    const { method, url, header } = ctx.request
+    const { method, url, header } = await ctx.request
+
+    ctx.body = "a"
 
     console.log([
-        statusColor(ctx.response.status),
-        "|",
+        ctx.response.status,
         chalk.bold.cyan(`${method}`),
         chalk.dim(url),
         chalk.blue(`${header.host}`),
     ].join(" "))
 
-
-    await next()
+    return await next()
 }
