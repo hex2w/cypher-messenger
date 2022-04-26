@@ -8,6 +8,6 @@
  * @prop {string?} cert - Path to the certificate (if https is used)
  */
 export default {
-    secret: "e0f2a8al63ja93ja1714f2d08dz2e17xb75bb7ed",
+    secret: "e0f2a8al395bdabb665ac7bf3734540bfd4c7ad62786e7d2d08dz2e17xb75bb7edcfc0c48c8a552fdd64fd",
     port: 3000,
 }
